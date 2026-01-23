@@ -3,6 +3,7 @@ import cors from 'cors';
 import familiesRouter from './routes/families.js';
 import cookiesRouter from './routes/cookies.js';
 import inventoryRouter from './routes/inventory.js';
+import ordersRouter from './routes/orders.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -17,6 +18,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/families', familiesRouter);
 app.use('/api/cookies', cookiesRouter);
 app.use('/api/inventory', inventoryRouter);
+app.use('/api/orders', ordersRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
