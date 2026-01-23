@@ -1,35 +1,41 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { FamilyProvider, useFamily } from './context/FamilyContext';
+import FamilySelector from './components/FamilySelector';
+import ParentLayout from './layouts/ParentLayout';
+import OrderPage from './pages/parent/OrderPage';
+import InventoryPage from './pages/parent/InventoryPage';
+import ExchangePage from './pages/parent/ExchangePage';
+import MyStatusPage from './pages/parent/MyStatusPage';
 
-function App() {
-  const [count, setCount] = useState(0)
+function ParentRoutes() {
+  const { selectedFamily } = useFamily();
+
+  if (!selectedFamily) {
+    return <FamilySelector />;
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <Routes>
+      <Route element={<ParentLayout />}>
+        <Route index element={<Navigate to="/order" replace />} />
+        <Route path="order" element={<OrderPage />} />
+        <Route path="inventory" element={<InventoryPage />} />
+        <Route path="exchange" element={<ExchangePage />} />
+        <Route path="my-status" element={<MyStatusPage />} />
+      </Route>
+    </Routes>
+  );
 }
 
-export default App
+function App() {
+  return (
+    <FamilyProvider>
+      <Routes>
+        <Route path="/admin/*" element={<div>Admin (coming next)</div>} />
+        <Route path="/*" element={<ParentRoutes />} />
+      </Routes>
+    </FamilyProvider>
+  );
+}
+
+export default App;
