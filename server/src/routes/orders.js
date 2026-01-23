@@ -66,6 +66,39 @@ router.post('/', (req, res) => {
     return res.status(400).json({ error: 'Family and items are required' });
   }
 
+  // Check inventory availability for each item
+  const insufficientItems = [];
+  for (const item of items) {
+    const inventory = db.prepare(`
+      SELECT COALESCE(SUM(quantity), 0) as available
+      FROM inventory
+      WHERE family_id IS NULL AND cookie_variety_id = ? AND status = 'on_hand'
+    `).get(item.cookie_variety_id);
+
+    const cookie = db.prepare('SELECT name FROM cookie_varieties WHERE id = ?').get(item.cookie_variety_id);
+
+    if (inventory.available < item.quantity) {
+      insufficientItems.push({
+        cookie: cookie?.name || `Cookie #${item.cookie_variety_id}`,
+        requested: item.quantity,
+        available: inventory.available
+      });
+    }
+  }
+
+  // Auto-decline if insufficient inventory
+  if (insufficientItems.length > 0) {
+    const details = insufficientItems.map(i =>
+      `${i.cookie}: requested ${i.requested}, only ${i.available} available`
+    ).join('; ');
+
+    return res.status(400).json({
+      error: 'Insufficient inventory',
+      details: details,
+      insufficientItems: insufficientItems
+    });
+  }
+
   const result = db.prepare(
     'INSERT INTO orders (family_id) VALUES (?)'
   ).run(family_id);

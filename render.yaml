@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: cookie-ordering-system
+    runtime: node
+    buildCommand: npm install && cd client && npm install && npm run build && cd ../server && npm install
+    startCommand: cd server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        sync: false
+    disk:
+      name: data
+      mountPath: /opt/render/project/src/server/data
+      sizeGB: 1

@@ -54,11 +54,18 @@ export default function OrderPage() {
       cookies.forEach(c => { reset[c.id] = 0; });
       setQuantities(reset);
     } catch (err) {
+      const errorData = err.response?.data;
+      const title = errorData?.error === 'Insufficient inventory'
+        ? 'Insufficient Inventory'
+        : 'Error';
+      const description = errorData?.details || errorData?.error || 'Failed to submit order';
+
       toast({
-        title: 'Error',
-        description: err.response?.data?.error || 'Failed to submit order',
+        title,
+        description,
         status: 'error',
-        duration: 5000,
+        duration: 8000,
+        isClosable: true,
       });
     }
     setSubmitting(false);

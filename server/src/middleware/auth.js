@@ -1,13 +1,17 @@
 import session from 'express-session';
 
-const ADMIN_PASSWORD = 'spicewoodgstroop40203!';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'spicewoodgstroop40203!';
+const isProduction = process.env.NODE_ENV === 'production';
 
 export const sessionMiddleware = session({
-  secret: 'cookie-troop-secret-key-change-in-production',
+  secret: process.env.SESSION_SECRET || 'cookie-troop-secret-key-change-in-production',
   resave: false,
   saveUninitialized: false,
+  proxy: isProduction,
   cookie: {
-    secure: false, // Set to true in production with HTTPS
+    secure: isProduction,
+    httpOnly: true,
+    sameSite: isProduction ? 'strict' : 'lax',
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 });
