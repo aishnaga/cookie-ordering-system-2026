@@ -4,6 +4,7 @@ import familiesRouter from './routes/families.js';
 import cookiesRouter from './routes/cookies.js';
 import inventoryRouter from './routes/inventory.js';
 import ordersRouter from './routes/orders.js';
+import exchangesRouter from './routes/exchanges.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -19,6 +20,7 @@ app.use('/api/families', familiesRouter);
 app.use('/api/cookies', cookiesRouter);
 app.use('/api/inventory', inventoryRouter);
 app.use('/api/orders', ordersRouter);
+app.use('/api/exchanges', exchangesRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
