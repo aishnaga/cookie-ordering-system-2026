@@ -21,13 +21,15 @@ if (isProduction) {
   app.set('trust proxy', 1);
 }
 
-// CORS - allow localhost in dev, same origin in production
-if (!isProduction) {
-  app.use(cors({
-    origin: 'http://localhost:5173',
-    credentials: true
-  }));
-}
+// CORS configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:5173'];
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 
 app.use(express.json());
 app.use(sessionMiddleware);
