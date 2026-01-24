@@ -33,4 +33,4 @@ WORKDIR /app/server
 EXPOSE 3001
 
 # Seed and start
-CMD ["sh", "-c", "npm run seed && npm start"]
+CMD npm run seed && npm start
