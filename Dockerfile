@@ -2,25 +2,19 @@ FROM node:20-slim
 
 WORKDIR /app
 
-# Copy package files
-COPY client/package*.json ./client/
-COPY server/package*.json ./server/
+# Copy everything
+COPY . .
 
-# Install dependencies
-RUN cd client && npm install
-RUN cd server && npm install
+# Install client dependencies and build
+WORKDIR /app/client
+RUN npm install && npm run build
 
-# Copy source code
-COPY client ./client
-COPY server ./server
-
-# Build frontend
-RUN cd client && npm run build
+# Install server dependencies
+WORKDIR /app/server
+RUN npm install
 
 # Create data directory
 RUN mkdir -p /app/server/data
-
-WORKDIR /app/server
 
 EXPOSE 3001
 
