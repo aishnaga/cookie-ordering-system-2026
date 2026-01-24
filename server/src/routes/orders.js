@@ -168,26 +168,29 @@ router.put('/:id/status', (req, res) => {
 
 // Record payment
 router.post('/:id/payment', (req, res) => {
-  const { amount, notes, isCreditCard } = req.body;
+  const { amount, notes, paymentType } = req.body;
   const { id } = req.params;
 
-  if (isCreditCard) {
-    db.prepare(`
-      UPDATE orders
-      SET credit_card_paid = credit_card_paid + ?,
-          payment_notes = COALESCE(payment_notes || '; ', '') || ?,
-          updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `).run(amount, notes || '', id);
-  } else {
-    db.prepare(`
-      UPDATE orders
-      SET amount_paid = amount_paid + ?,
-          payment_notes = COALESCE(payment_notes || '; ', '') || ?,
-          updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `).run(amount, notes || '', id);
+  const validTypes = ['cash', 'check', 'credit_card'];
+  if (!validTypes.includes(paymentType)) {
+    return res.status(400).json({ error: 'Invalid payment type' });
   }
+
+  const columnMap = {
+    cash: 'cash_paid',
+    check: 'check_paid',
+    credit_card: 'credit_card_paid'
+  };
+
+  const column = columnMap[paymentType];
+
+  db.prepare(`
+    UPDATE orders
+    SET ${column} = ${column} + ?,
+        payment_notes = COALESCE(payment_notes || '; ', '') || ?,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `).run(amount, notes || '', id);
 
   res.json({ success: true });
 });

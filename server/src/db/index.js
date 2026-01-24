@@ -26,6 +26,25 @@ if (existsSync(dbPath)) {
 const schema = readFileSync(join(__dirname, 'schema.sql'), 'utf-8');
 db.run(schema);
 
+// Migration: Add cash_paid and check_paid columns if they don't exist
+try {
+  const cols = db.exec("PRAGMA table_info(orders)");
+  const colNames = cols[0]?.values?.map(v => v[1]) || [];
+
+  if (colNames.includes('amount_paid') && !colNames.includes('cash_paid')) {
+    // Rename amount_paid to cash_paid and add check_paid
+    db.run("ALTER TABLE orders RENAME COLUMN amount_paid TO cash_paid");
+    db.run("ALTER TABLE orders ADD COLUMN check_paid REAL DEFAULT 0");
+  } else if (!colNames.includes('cash_paid')) {
+    db.run("ALTER TABLE orders ADD COLUMN cash_paid REAL DEFAULT 0");
+  }
+  if (!colNames.includes('check_paid')) {
+    db.run("ALTER TABLE orders ADD COLUMN check_paid REAL DEFAULT 0");
+  }
+} catch (e) {
+  // Migration may fail if columns already exist, which is fine
+}
+
 // Save database to file
 const saveDb = () => {
   const data = db.export();

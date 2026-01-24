@@ -55,8 +55,14 @@ router.get('/:id/balance', (req, res) => {
     WHERE o.family_id = ? AND o.status != 'pending'
   `).get(id);
 
-  const paid = db.prepare(`
-    SELECT COALESCE(SUM(amount_paid), 0) as total
+  const cash = db.prepare(`
+    SELECT COALESCE(SUM(cash_paid), 0) as total
+    FROM orders
+    WHERE family_id = ?
+  `).get(id);
+
+  const check = db.prepare(`
+    SELECT COALESCE(SUM(check_paid), 0) as total
     FROM orders
     WHERE family_id = ?
   `).get(id);
@@ -67,11 +73,12 @@ router.get('/:id/balance', (req, res) => {
     WHERE family_id = ?
   `).get(id);
 
-  const totalPaid = paid.total + creditCard.total;
+  const totalPaid = cash.total + check.total + creditCard.total;
 
   res.json({
     owed: owed.total,
-    paid: paid.total,
+    cash: cash.total,
+    check: check.total,
     creditCard: creditCard.total,
     balance: owed.total - totalPaid
   });

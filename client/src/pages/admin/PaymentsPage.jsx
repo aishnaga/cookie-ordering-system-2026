@@ -31,14 +31,14 @@ export default function PaymentsPage() {
     onOpen();
   };
 
-  const recordPayment = async (orderId, isCreditCard) => {
+  const recordPayment = async (orderId, paymentType) => {
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount <= 0) {
       toast({ title: 'Please enter a valid amount', status: 'error', duration: 2000 });
       return;
     }
     try {
-      await api.post(`/orders/${orderId}/payment`, { amount: numAmount, notes, isCreditCard });
+      await api.post(`/orders/${orderId}/payment`, { amount: numAmount, notes, paymentType });
       toast({ title: 'Payment recorded', status: 'success', duration: 2000 });
       onClose();
       loadFamilies();
@@ -52,13 +52,14 @@ export default function PaymentsPage() {
       <VStack spacing={6} align="stretch">
         <Heading>Payments</Heading>
         <Table variant="simple" bg="white">
-          <Thead><Tr><Th>Family</Th><Th isNumeric>Owed</Th><Th isNumeric>Cash/Check</Th><Th isNumeric>Credit Card</Th><Th isNumeric>Balance</Th><Th>Actions</Th></Tr></Thead>
+          <Thead><Tr><Th>Family</Th><Th isNumeric>Owed</Th><Th isNumeric>Cash</Th><Th isNumeric>Check</Th><Th isNumeric>Credit Card</Th><Th isNumeric>Balance</Th><Th>Actions</Th></Tr></Thead>
           <Tbody>
             {families.map(f => (
               <Tr key={f.id}>
                 <Td>{f.name}</Td>
                 <Td isNumeric>${(f.owed || 0).toFixed(2)}</Td>
-                <Td isNumeric>${(f.paid || 0).toFixed(2)}</Td>
+                <Td isNumeric>${(f.cash || 0).toFixed(2)}</Td>
+                <Td isNumeric>${(f.check || 0).toFixed(2)}</Td>
                 <Td isNumeric>${(f.creditCard || 0).toFixed(2)}</Td>
                 <Td isNumeric color={(f.balance || 0) > 0 ? 'red.500' : 'green.500'}>${Math.abs(f.balance || 0).toFixed(2)}</Td>
                 <Td><Button size="sm" colorScheme="green" onClick={() => openPayment(f)}>Record Payment</Button></Td>
@@ -84,12 +85,15 @@ export default function PaymentsPage() {
               ) : (
                 orders.map(o => (
                   <Box key={o.id} w="100%" p={3} borderWidth={1} borderRadius="md">
-                    <Text mb={2}>Order #{o.id} - ${((o.amount_owed || 0) - (o.amount_paid || 0) - (o.credit_card_paid || 0)).toFixed(2)} remaining</Text>
+                    <Text mb={2}>Order #{o.id} - ${((o.amount_owed || 0) - (o.cash_paid || 0) - (o.check_paid || 0) - (o.credit_card_paid || 0)).toFixed(2)} remaining</Text>
                     <HStack>
-                      <Button flex={1} colorScheme="green" onClick={() => recordPayment(o.id, false)}>
-                        Cash/Check
+                      <Button flex={1} colorScheme="green" onClick={() => recordPayment(o.id, 'cash')}>
+                        Cash
                       </Button>
-                      <Button flex={1} colorScheme="blue" onClick={() => recordPayment(o.id, true)}>
+                      <Button flex={1} colorScheme="orange" onClick={() => recordPayment(o.id, 'check')}>
+                        Check
+                      </Button>
+                      <Button flex={1} colorScheme="blue" onClick={() => recordPayment(o.id, 'credit_card')}>
                         Credit Card
                       </Button>
                     </HStack>
