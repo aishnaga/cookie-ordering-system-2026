@@ -29,11 +29,14 @@ router.get('/', (req, res) => {
       WHERE oli.order_id = ?
     `).all(order.id);
 
+    console.log(`Order ${order.id} line items:`, lineItems);
+
     const amount_owed = lineItems.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
 
     return { ...order, line_items: lineItems, amount_owed };
   });
 
+  console.log('Returning orders:', JSON.stringify(ordersWithItems, null, 2));
   res.json(ordersWithItems);
 });
 
