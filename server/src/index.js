@@ -2,12 +2,13 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { sessionMiddleware, loginAdmin, logoutAdmin, checkAdmin } from './middleware/auth.js';
+import { sessionMiddleware, loginAdmin, logoutAdmin, checkAdmin, requireAdmin } from './middleware/auth.js';
 import familiesRouter from './routes/families.js';
 import cookiesRouter from './routes/cookies.js';
 import inventoryRouter from './routes/inventory.js';
 import ordersRouter from './routes/orders.js';
 import exchangesRouter from './routes/exchanges.js';
+import db from './db/index.js';
 
 // Seed database on startup
 import './db/seed.js';
@@ -51,6 +52,16 @@ app.use('/api/cookies', cookiesRouter);
 app.use('/api/inventory', inventoryRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/exchanges', exchangesRouter);
+
+// Reset data endpoint (admin only)
+app.post('/api/admin/reset-data', requireAdmin, (req, res) => {
+  db.prepare('DELETE FROM order_line_items').run();
+  db.prepare('DELETE FROM orders').run();
+  db.prepare('DELETE FROM inventory').run();
+  db.prepare('DELETE FROM inventory_transactions').run();
+  db.prepare('DELETE FROM exchanges').run();
+  res.json({ success: true, message: 'All orders and inventory cleared' });
+});
 
 // Serve static files in production
 if (isProduction) {

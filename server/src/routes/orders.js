@@ -29,14 +29,11 @@ router.get('/', (req, res) => {
       WHERE oli.order_id = ?
     `).all(order.id);
 
-    console.log(`Order ${order.id} line items:`, lineItems);
-
     const amount_owed = lineItems.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
 
     return { ...order, line_items: lineItems, amount_owed };
   });
 
-  console.log('Returning orders:', JSON.stringify(ordersWithItems, null, 2));
   res.json(ordersWithItems);
 });
 
@@ -133,19 +130,13 @@ router.post('/', (req, res) => {
   ).run(family_id);
 
   const orderId = result.lastInsertRowid;
-  console.log('Created order with ID:', orderId);
 
   for (const item of items) {
     const cookie = db.prepare('SELECT price_per_box FROM cookie_varieties WHERE id = ?').get(item.cookie_variety_id);
-    console.log(`Inserting line item: order=${orderId}, cookie=${item.cookie_variety_id}, qty=${item.quantity}, price=${cookie?.price_per_box}`);
     db.prepare(
       'INSERT INTO order_line_items (order_id, cookie_variety_id, quantity, unit_price) VALUES (?, ?, ?, ?)'
     ).run(orderId, item.cookie_variety_id, item.quantity, cookie.price_per_box);
   }
-
-  // Verify line items were saved
-  const savedItems = db.prepare('SELECT * FROM order_line_items WHERE order_id = ?').all(orderId);
-  console.log('Saved line items:', savedItems);
 
   res.status(201).json({ id: orderId, status: 'pending' });
 });
