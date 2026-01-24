@@ -6,7 +6,7 @@ const cookies = [
   { name: 'Caramel Delites', price: 6.00 },
   { name: 'Peanut Butter Patties', price: 6.00 },
   { name: 'Adventurefuls', price: 6.00 },
-  { name: 'Lemonads', price: 6.00 },
+  { name: 'Lemonades', price: 6.00 },
   { name: 'Trefoils', price: 6.00 },
   { name: 'Peanut Butter Sandwich', price: 6.00 },
   { name: 'Caramel Chocolate Chip', price: 7.00 },
