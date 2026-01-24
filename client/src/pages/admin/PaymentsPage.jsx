@@ -57,11 +57,11 @@ export default function PaymentsPage() {
             {families.map(f => (
               <Tr key={f.id}>
                 <Td>{f.name}</Td>
-                <Td isNumeric>${(f.owed || 0).toFixed(2)}</Td>
-                <Td isNumeric>${(f.cash || 0).toFixed(2)}</Td>
-                <Td isNumeric>${(f.check || 0).toFixed(2)}</Td>
-                <Td isNumeric>${(f.creditCard || 0).toFixed(2)}</Td>
-                <Td isNumeric color={(f.balance || 0) > 0 ? 'red.500' : 'green.500'}>${Math.abs(f.balance || 0).toFixed(2)}</Td>
+                <Td isNumeric>{f.owed ? `$${f.owed.toFixed(2)}` : ''}</Td>
+                <Td isNumeric>{f.cash ? `$${f.cash.toFixed(2)}` : ''}</Td>
+                <Td isNumeric>{f.check ? `$${f.check.toFixed(2)}` : ''}</Td>
+                <Td isNumeric>{f.creditCard ? `$${f.creditCard.toFixed(2)}` : ''}</Td>
+                <Td isNumeric color={(f.balance || 0) > 0 ? 'red.500' : 'green.500'}>{f.balance ? `$${Math.abs(f.balance).toFixed(2)}` : ''}</Td>
                 <Td><Button size="sm" colorScheme="green" onClick={() => openPayment(f)}>Record Payment</Button></Td>
               </Tr>
             ))}
