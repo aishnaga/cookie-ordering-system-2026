@@ -96,4 +96,28 @@ router.post('/adjust', (req, res) => {
   res.json({ success: true });
 });
 
+// Update family inventory (for parents to manually adjust their own inventory)
+router.put('/family/:familyId', (req, res) => {
+  const { familyId } = req.params;
+  const { items } = req.body; // Array of { cookie_variety_id, quantity }
+
+  for (const item of items) {
+    const existing = db.prepare(
+      'SELECT * FROM inventory WHERE family_id = ? AND cookie_variety_id = ?'
+    ).get(familyId, item.cookie_variety_id);
+
+    if (existing) {
+      db.prepare(
+        'UPDATE inventory SET quantity = ? WHERE id = ?'
+      ).run(item.quantity, existing.id);
+    } else if (item.quantity > 0) {
+      db.prepare(
+        'INSERT INTO inventory (family_id, cookie_variety_id, quantity) VALUES (?, ?, ?)'
+      ).run(familyId, item.cookie_variety_id, item.quantity);
+    }
+  }
+
+  res.json({ success: true });
+});
+
 export default router;
