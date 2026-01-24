@@ -168,16 +168,26 @@ router.put('/:id/status', (req, res) => {
 
 // Record payment
 router.post('/:id/payment', (req, res) => {
-  const { amount, notes } = req.body;
+  const { amount, notes, isCreditCard } = req.body;
   const { id } = req.params;
 
-  db.prepare(`
-    UPDATE orders
-    SET amount_paid = amount_paid + ?,
-        payment_notes = COALESCE(payment_notes || '; ', '') || ?,
-        updated_at = CURRENT_TIMESTAMP
-    WHERE id = ?
-  `).run(amount, notes || '', id);
+  if (isCreditCard) {
+    db.prepare(`
+      UPDATE orders
+      SET credit_card_paid = credit_card_paid + ?,
+          payment_notes = COALESCE(payment_notes || '; ', '') || ?,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(amount, notes || '', id);
+  } else {
+    db.prepare(`
+      UPDATE orders
+      SET amount_paid = amount_paid + ?,
+          payment_notes = COALESCE(payment_notes || '; ', '') || ?,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(amount, notes || '', id);
+  }
 
   res.json({ success: true });
 });

@@ -61,10 +61,19 @@ router.get('/:id/balance', (req, res) => {
     WHERE family_id = ?
   `).get(id);
 
+  const creditCard = db.prepare(`
+    SELECT COALESCE(SUM(credit_card_paid), 0) as total
+    FROM orders
+    WHERE family_id = ?
+  `).get(id);
+
+  const totalPaid = paid.total + creditCard.total;
+
   res.json({
     owed: owed.total,
     paid: paid.total,
-    balance: owed.total - paid.total
+    creditCard: creditCard.total,
+    balance: owed.total - totalPaid
   });
 });
 

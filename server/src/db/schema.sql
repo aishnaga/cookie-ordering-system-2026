@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS orders (
   family_id INTEGER NOT NULL,
   status TEXT DEFAULT 'pending',
   amount_paid REAL DEFAULT 0,
+  credit_card_paid REAL DEFAULT 0,
   payment_notes TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
