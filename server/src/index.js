@@ -9,6 +9,9 @@ import inventoryRouter from './routes/inventory.js';
 import ordersRouter from './routes/orders.js';
 import exchangesRouter from './routes/exchanges.js';
 
+// Seed database on startup
+import './db/seed.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
