@@ -56,7 +56,12 @@ const saveDb = () => {
 const wrapper = {
   prepare: (sql) => ({
     run: (...params) => {
-      db.run(sql, params);
+      const stmt = db.prepare(sql);
+      if (params.length > 0) {
+        stmt.bind(params);
+      }
+      stmt.step();
+      stmt.free();
       saveDb();
       return { lastInsertRowid: db.exec("SELECT last_insert_rowid()")[0]?.values[0]?.[0] };
     },
