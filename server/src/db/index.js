@@ -62,11 +62,12 @@ const wrapper = {
       }
       stmt.step();
       stmt.free();
+      // Get last insert rowid BEFORE saving (which might reset it)
+      const lastRowStmt = db.prepare("SELECT last_insert_rowid() as id");
+      lastRowStmt.step();
+      const lastInsertRowid = lastRowStmt.getAsObject().id;
+      lastRowStmt.free();
       saveDb();
-      // Get last insert rowid
-      const result = db.exec("SELECT last_insert_rowid() as id");
-      const lastInsertRowid = result[0]?.values[0]?.[0];
-      console.log('lastInsertRowid:', lastInsertRowid, 'from result:', JSON.stringify(result));
       return { lastInsertRowid };
     },
     get: (...params) => {
