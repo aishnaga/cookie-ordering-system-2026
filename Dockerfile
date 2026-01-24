@@ -29,8 +29,11 @@ RUN mkdir -p /app/server/data
 
 WORKDIR /app/server
 
+# Make start script executable
+RUN chmod +x start.sh
+
 # Expose port
 EXPOSE 3001
 
 # Seed and start
-CMD npm run seed && npm start
+ENTRYPOINT ["/bin/sh", "./start.sh"]
