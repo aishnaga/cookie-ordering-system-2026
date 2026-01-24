@@ -63,7 +63,11 @@ const wrapper = {
       stmt.step();
       stmt.free();
       saveDb();
-      return { lastInsertRowid: db.exec("SELECT last_insert_rowid()")[0]?.values[0]?.[0] };
+      // Get last insert rowid
+      const result = db.exec("SELECT last_insert_rowid() as id");
+      const lastInsertRowid = result[0]?.values[0]?.[0];
+      console.log('lastInsertRowid:', lastInsertRowid, 'from result:', JSON.stringify(result));
+      return { lastInsertRowid };
     },
     get: (...params) => {
       const stmt = db.prepare(sql);
