@@ -7,8 +7,7 @@ const router = Router();
 router.get('/', (req, res) => {
   const status = req.query.status;
   let query = `
-    SELECT o.*, f.name as family_name,
-    (SELECT SUM(oli.quantity * oli.unit_price) FROM order_line_items oli WHERE oli.order_id = o.id) as amount_owed
+    SELECT o.*, f.name as family_name
     FROM orders o
     JOIN families f ON o.family_id = f.id
   `;
@@ -21,15 +20,18 @@ router.get('/', (req, res) => {
     ? db.prepare(query).all(status)
     : db.prepare(query).all();
 
-  // Add line items to each order
+  // Add line items and calculate amount for each order
   const ordersWithItems = orders.map(order => {
     const lineItems = db.prepare(`
-      SELECT oli.quantity, cv.name as cookie_name
+      SELECT oli.quantity, oli.unit_price, cv.name as cookie_name
       FROM order_line_items oli
       JOIN cookie_varieties cv ON oli.cookie_variety_id = cv.id
       WHERE oli.order_id = ?
     `).all(order.id);
-    return { ...order, line_items: lineItems };
+
+    const amount_owed = lineItems.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+
+    return { ...order, line_items: lineItems, amount_owed };
   });
 
   res.json(ordersWithItems);
@@ -38,13 +40,25 @@ router.get('/', (req, res) => {
 // Get orders for a family
 router.get('/family/:familyId', (req, res) => {
   const orders = db.prepare(`
-    SELECT o.*,
-    (SELECT SUM(oli.quantity * oli.unit_price) FROM order_line_items oli WHERE oli.order_id = o.id) as amount_owed
+    SELECT o.*
     FROM orders o
     WHERE o.family_id = ?
     ORDER BY o.created_at DESC
   `).all(req.params.familyId);
-  res.json(orders);
+
+  const ordersWithAmount = orders.map(order => {
+    const lineItems = db.prepare(`
+      SELECT oli.quantity, oli.unit_price
+      FROM order_line_items oli
+      WHERE oli.order_id = ?
+    `).all(order.id);
+
+    const amount_owed = lineItems.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+
+    return { ...order, amount_owed };
+  });
+
+  res.json(ordersWithAmount);
 });
 
 // Get single order with line items
