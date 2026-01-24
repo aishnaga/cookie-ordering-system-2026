@@ -35,12 +35,13 @@ export default function OrdersPage() {
           </Select>
         </HStack>
         <Table variant="simple" bg="white">
-          <Thead><Tr><Th>ID</Th><Th>Family</Th><Th>Date</Th><Th isNumeric>Amount</Th><Th>Status</Th><Th>Actions</Th></Tr></Thead>
+          <Thead><Tr><Th>ID</Th><Th>Family</Th><Th>Cookies</Th><Th>Date</Th><Th isNumeric>Amount</Th><Th>Status</Th><Th>Actions</Th></Tr></Thead>
           <Tbody>
             {orders.map(o => (
               <Tr key={o.id}>
                 <Td>{o.id}</Td>
                 <Td>{o.family_name}</Td>
+                <Td>{o.line_items?.map(item => `${item.cookie_name} (${item.quantity})`).join(', ') || '-'}</Td>
                 <Td>{new Date(o.created_at).toLocaleDateString()}</Td>
                 <Td isNumeric>${(o.amount_owed || 0).toFixed(2)}</Td>
                 <Td><Badge colorScheme={statusColors[o.status]}>{o.status.replace(/_/g, ' ')}</Badge></Td>

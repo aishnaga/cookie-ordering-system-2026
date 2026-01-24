@@ -20,7 +20,19 @@ router.get('/', (req, res) => {
   const orders = status
     ? db.prepare(query).all(status)
     : db.prepare(query).all();
-  res.json(orders);
+
+  // Add line items to each order
+  const ordersWithItems = orders.map(order => {
+    const lineItems = db.prepare(`
+      SELECT oli.quantity, cv.name as cookie_name
+      FROM order_line_items oli
+      JOIN cookie_varieties cv ON oli.cookie_variety_id = cv.id
+      WHERE oli.order_id = ?
+    `).all(order.id);
+    return { ...order, line_items: lineItems };
+  });
+
+  res.json(ordersWithItems);
 });
 
 // Get orders for a family
