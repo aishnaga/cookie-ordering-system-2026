@@ -4,8 +4,12 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const dataDir = join(__dirname, '../../data');
+// Use /data in production (Railway volume mount), local data folder in development
+const isProduction = process.env.NODE_ENV === 'production';
+const dataDir = isProduction ? '/data' : join(__dirname, '../../data');
 const dbPath = join(dataDir, 'cookies.db');
+
+console.log('Database path:', dbPath);
 
 // Ensure data directory exists
 mkdirSync(dataDir, { recursive: true });
