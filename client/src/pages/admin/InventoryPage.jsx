@@ -7,6 +7,8 @@ export default function InventoryPage() {
   const [cookies, setCookies] = useState([]);
   const [selectedCookie, setSelectedCookie] = useState('');
   const [quantity, setQuantity] = useState(0);
+  const [editingId, setEditingId] = useState(null);
+  const [editQuantity, setEditQuantity] = useState(0);
   const toast = useToast();
 
   const load = () => {
@@ -23,6 +25,27 @@ export default function InventoryPage() {
     toast({ title: 'Inventory added', status: 'success', duration: 2000 });
   };
 
+  const startEdit = (item) => {
+    setEditingId(item.id);
+    setEditQuantity(item.quantity);
+  };
+
+  const saveEdit = async (item) => {
+    await api.post('/inventory/adjust', {
+      family_id: null,
+      cookie_variety_id: item.cookie_variety_id,
+      quantity: editQuantity,
+      reason: 'admin_correction'
+    });
+    setEditingId(null);
+    load();
+    toast({ title: 'Inventory updated', status: 'success', duration: 2000 });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+  };
+
   return (
     <Box p={6}>
       <VStack spacing={6} align="stretch">
@@ -37,13 +60,31 @@ export default function InventoryPage() {
           <Button colorScheme="blue" onClick={addInventory}>Add Stock</Button>
         </HStack>
         <Table variant="simple" bg="white">
-          <Thead><Tr><Th>Cookie</Th><Th isNumeric>Quantity</Th><Th>Status</Th></Tr></Thead>
+          <Thead><Tr><Th>Cookie</Th><Th isNumeric>Quantity</Th><Th>Status</Th><Th>Actions</Th></Tr></Thead>
           <Tbody>
             {inventory.map(i => (
               <Tr key={i.id}>
                 <Td>{i.cookie_name}</Td>
-                <Td isNumeric>{i.quantity}</Td>
+                <Td isNumeric>
+                  {editingId === i.id ? (
+                    <NumberInput size="sm" maxW={20} min={0} value={editQuantity} onChange={(_, v) => setEditQuantity(v || 0)}>
+                      <NumberInputField />
+                    </NumberInput>
+                  ) : (
+                    i.quantity
+                  )}
+                </Td>
                 <Td><Badge colorScheme={i.status === 'on_hand' ? 'green' : 'yellow'}>{i.status}</Badge></Td>
+                <Td>
+                  {editingId === i.id ? (
+                    <HStack>
+                      <Button size="xs" colorScheme="green" onClick={() => saveEdit(i)}>Save</Button>
+                      <Button size="xs" onClick={cancelEdit}>Cancel</Button>
+                    </HStack>
+                  ) : (
+                    <Button size="xs" onClick={() => startEdit(i)}>Edit</Button>
+                  )}
+                </Td>
               </Tr>
             ))}
           </Tbody>
