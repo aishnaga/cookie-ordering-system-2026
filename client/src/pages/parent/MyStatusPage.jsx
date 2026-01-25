@@ -10,7 +10,7 @@ export default function MyStatusPage() {
   const { selectedFamily } = useFamily();
   const [orders, setOrders] = useState([]);
   const [inventory, setInventory] = useState([]);
-  const [balance, setBalance] = useState({ owed: 0, paid: 0, balance: 0 });
+  const [balance, setBalance] = useState({ owed: 0, cash: 0, check: 0, creditCard: 0, balance: 0 });
 
   useEffect(() => {
     api.get(`/orders/family/${selectedFamily.id}`).then(res => setOrders(res.data));
@@ -34,19 +34,19 @@ export default function MyStatusPage() {
         <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
           <Stat borderWidth={1} borderRadius="lg" p={4}>
             <StatLabel>Amount Owed</StatLabel>
-            <StatNumber>${balance.owed.toFixed(2)}</StatNumber>
+            <StatNumber>${(balance.owed || 0).toFixed(2)}</StatNumber>
           </Stat>
           <Stat borderWidth={1} borderRadius="lg" p={4}>
             <StatLabel>Amount Paid</StatLabel>
-            <StatNumber>${balance.paid.toFixed(2)}</StatNumber>
+            <StatNumber>${((balance.cash || 0) + (balance.check || 0) + (balance.creditCard || 0)).toFixed(2)}</StatNumber>
           </Stat>
-          <Stat borderWidth={1} borderRadius="lg" p={4} bg={balance.balance > 0 ? 'red.50' : 'green.50'}>
+          <Stat borderWidth={1} borderRadius="lg" p={4} bg={(balance.balance || 0) > 0 ? 'red.50' : 'green.50'}>
             <StatLabel>Balance</StatLabel>
-            <StatNumber color={balance.balance > 0 ? 'red.500' : 'green.500'}>
-              ${Math.abs(balance.balance).toFixed(2)}
+            <StatNumber color={(balance.balance || 0) > 0 ? 'red.500' : 'green.500'}>
+              ${Math.abs(balance.balance || 0).toFixed(2)}
             </StatNumber>
             <StatHelpText>
-              {balance.balance > 0 ? 'Due' : balance.balance < 0 ? 'Credit' : 'Paid in full'}
+              {(balance.balance || 0) > 0 ? 'Due' : (balance.balance || 0) < 0 ? 'Credit' : 'Paid in full'}
             </StatHelpText>
           </Stat>
         </SimpleGrid>
@@ -93,7 +93,7 @@ export default function MyStatusPage() {
                   <Td>{order.id}</Td>
                   <Td>{new Date(order.created_at).toLocaleDateString()}</Td>
                   <Td isNumeric>${(order.amount_owed || 0).toFixed(2)}</Td>
-                  <Td isNumeric>${order.amount_paid.toFixed(2)}</Td>
+                  <Td isNumeric>${((order.cash_paid || 0) + (order.check_paid || 0) + (order.credit_card_paid || 0)).toFixed(2)}</Td>
                   <Td>
                     <Badge colorScheme={statusColors[order.status]}>
                       {order.status.replace(/_/g, ' ')}
