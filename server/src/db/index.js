@@ -4,11 +4,16 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-// Use /app/server/data in production (Railway volume mount), local data folder in development
-const isProduction = process.env.NODE_ENV === 'production';
-const dataDir = isProduction ? '/app/server/data' : join(__dirname, '../../data');
+// Use /app/server/data if on Railway (check for RAILWAY env vars), otherwise local
+const isRailway = process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_PROJECT_ID;
+const localDataDir = join(__dirname, '../../data');
+const railwayDataDir = '/app/server/data';
+
+// Use Railway path if on Railway, otherwise local
+const dataDir = isRailway ? railwayDataDir : localDataDir;
 const dbPath = join(dataDir, 'cookies.db');
 
+console.log('Environment:', isRailway ? 'Railway' : 'Local');
 console.log('Database path:', dbPath);
 
 // Ensure data directory exists
