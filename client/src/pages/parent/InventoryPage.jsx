@@ -108,52 +108,60 @@ export default function InventoryPage() {
             </TabPanel>
 
             <TabPanel>
-              <Table variant="simple">
-                <Thead>
-                  <Tr>
-                    <Th>Cookie</Th>
-                    <Th isNumeric>Available</Th>
-                    <Th>Status</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {central.map(item => (
-                    <Tr key={item.id}>
-                      <Td>{item.cookie_name}</Td>
-                      <Td isNumeric>{item.quantity}</Td>
-                      <Td>
-                        <Badge colorScheme={item.status === 'on_hand' ? 'green' : 'yellow'}>
-                          {item.status}
-                        </Badge>
-                      </Td>
+              {central.length === 0 ? (
+                <Text color="gray.500">No troop inventory yet. The coordinator needs to add inventory.</Text>
+              ) : (
+                <Table variant="simple">
+                  <Thead>
+                    <Tr>
+                      <Th>Cookie</Th>
+                      <Th isNumeric>Available</Th>
+                      <Th>Status</Th>
                     </Tr>
-                  ))}
-                </Tbody>
-              </Table>
+                  </Thead>
+                  <Tbody>
+                    {central.map(item => (
+                      <Tr key={item.id}>
+                        <Td>{item.cookie_name}</Td>
+                        <Td isNumeric>{item.quantity}</Td>
+                        <Td>
+                          <Badge colorScheme={item.status === 'on_hand' ? 'green' : 'yellow'}>
+                            {item.status}
+                          </Badge>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              )}
             </TabPanel>
 
             <TabPanel>
-              {Object.entries(byFamily).map(([familyName, items]) => (
-                <Box key={familyName} mb={6}>
-                  <Heading size="sm" mb={2}>{familyName}</Heading>
-                  <Table variant="simple" size="sm">
-                    <Thead>
-                      <Tr>
-                        <Th>Cookie</Th>
-                        <Th isNumeric>Quantity</Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {items.map(item => (
-                        <Tr key={item.id}>
-                          <Td>{item.cookie_name}</Td>
-                          <Td isNumeric>{item.quantity}</Td>
+              {Object.keys(byFamily).length === 0 ? (
+                <Text color="gray.500">No family inventory yet.</Text>
+              ) : (
+                Object.entries(byFamily).map(([familyName, items]) => (
+                  <Box key={familyName} mb={6}>
+                    <Heading size="sm" mb={2}>{familyName}</Heading>
+                    <Table variant="simple" size="sm">
+                      <Thead>
+                        <Tr>
+                          <Th>Cookie</Th>
+                          <Th isNumeric>Quantity</Th>
                         </Tr>
-                      ))}
-                    </Tbody>
-                  </Table>
-                </Box>
-              ))}
+                      </Thead>
+                      <Tbody>
+                        {items.map(item => (
+                          <Tr key={item.id}>
+                            <Td>{item.cookie_name}</Td>
+                            <Td isNumeric>{item.quantity}</Td>
+                          </Tr>
+                        ))}
+                      </Tbody>
+                    </Table>
+                  </Box>
+                ))
+              )}
             </TabPanel>
           </TabPanels>
         </Tabs>
