@@ -25,9 +25,12 @@ const SQL = await initSqlJs();
 // Load existing database or create new one
 let db;
 if (existsSync(dbPath)) {
+  console.log('Loading existing database from:', dbPath);
   const buffer = readFileSync(dbPath);
+  console.log('Database file size:', buffer.length, 'bytes');
   db = new SQL.Database(buffer);
 } else {
+  console.log('Creating new database (file does not exist)');
   db = new SQL.Database();
 }
 
