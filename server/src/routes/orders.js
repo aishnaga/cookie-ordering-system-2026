@@ -219,4 +219,37 @@ router.post('/:id/payment', (req, res) => {
   res.json({ success: true });
 });
 
+// Update order line items (coordinator)
+router.put('/:id', (req, res) => {
+  const { id } = req.params;
+  const { items } = req.body;
+
+  // Delete existing line items
+  db.prepare('DELETE FROM order_line_items WHERE order_id = ?').run(id);
+
+  // Insert new line items
+  for (const item of items) {
+    const cookie = db.prepare('SELECT price_per_box FROM cookie_varieties WHERE id = ?').get(item.cookie_variety_id);
+    db.prepare(
+      'INSERT INTO order_line_items (order_id, cookie_variety_id, quantity, unit_price) VALUES (?, ?, ?, ?)'
+    ).run(id, item.cookie_variety_id, item.quantity, cookie.price_per_box);
+  }
+
+  db.prepare('UPDATE orders SET updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(id);
+
+  res.json({ success: true });
+});
+
+// Delete order (coordinator)
+router.delete('/:id', (req, res) => {
+  const { id } = req.params;
+
+  // Delete line items first
+  db.prepare('DELETE FROM order_line_items WHERE order_id = ?').run(id);
+  // Delete the order
+  db.prepare('DELETE FROM orders WHERE id = ?').run(id);
+
+  res.json({ success: true });
+});
+
 export default router;
