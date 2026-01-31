@@ -190,7 +190,7 @@ router.put('/:id/status', (req, res) => {
   res.json({ success: true });
 });
 
-// Record payment
+// Record payment (add to existing)
 router.post('/:id/payment', (req, res) => {
   const { amount, notes, paymentType } = req.body;
   const { id } = req.params;
@@ -215,6 +215,23 @@ router.post('/:id/payment', (req, res) => {
         updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
   `).run(amount, notes || '', id);
+
+  res.json({ success: true });
+});
+
+// Update payment amounts directly (for corrections)
+router.put('/:id/payment', (req, res) => {
+  const { cash_paid, check_paid, credit_card_paid } = req.body;
+  const { id } = req.params;
+
+  db.prepare(`
+    UPDATE orders
+    SET cash_paid = ?,
+        check_paid = ?,
+        credit_card_paid = ?,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `).run(cash_paid || 0, check_paid || 0, credit_card_paid || 0, id);
 
   res.json({ success: true });
 });
