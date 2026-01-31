@@ -1,5 +1,5 @@
 import initSqlJs from 'sql.js';
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -13,11 +13,26 @@ const railwayDataDir = '/app/server/data';
 const dataDir = isRailway ? railwayDataDir : localDataDir;
 const dbPath = join(dataDir, 'cookies.db');
 
+console.log('=== DATABASE INITIALIZATION ===');
 console.log('Environment:', isRailway ? 'Railway' : 'Local');
+console.log('RAILWAY_ENVIRONMENT:', process.env.RAILWAY_ENVIRONMENT);
+console.log('RAILWAY_PROJECT_ID:', process.env.RAILWAY_PROJECT_ID);
 console.log('Database path:', dbPath);
 
 // Ensure data directory exists
 mkdirSync(dataDir, { recursive: true });
+
+// List contents of data directory
+try {
+  const files = readdirSync(dataDir);
+  console.log('Files in data directory:', files);
+  files.forEach(f => {
+    const stats = statSync(join(dataDir, f));
+    console.log(`  ${f}: ${stats.size} bytes, modified ${stats.mtime}`);
+  });
+} catch (e) {
+  console.log('Could not list data directory:', e.message);
+}
 
 // Initialize SQL.js
 const SQL = await initSqlJs();
@@ -37,6 +52,17 @@ if (existsSync(dbPath)) {
 // Initialize schema
 const schema = readFileSync(join(__dirname, 'schema.sql'), 'utf-8');
 db.run(schema);
+
+// Log existing data count
+try {
+  const ordersResult = db.exec("SELECT COUNT(*) as count FROM orders");
+  const familiesResult = db.exec("SELECT COUNT(*) as count FROM families");
+  console.log('Orders in database:', ordersResult[0]?.values[0]?.[0] || 0);
+  console.log('Families in database:', familiesResult[0]?.values[0]?.[0] || 0);
+} catch (e) {
+  console.log('Could not count records:', e.message);
+}
+console.log('=== END DATABASE INITIALIZATION ===');
 
 // Migration: Add cash_paid and check_paid columns if they don't exist
 try {
