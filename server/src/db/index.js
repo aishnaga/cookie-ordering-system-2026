@@ -57,8 +57,12 @@ db.run(schema);
 try {
   const ordersResult = db.exec("SELECT COUNT(*) as count FROM orders");
   const familiesResult = db.exec("SELECT COUNT(*) as count FROM families");
+  const lineItemsResult = db.exec("SELECT COUNT(*) as count FROM order_line_items");
+  const orphanedResult = db.exec("SELECT COUNT(*) as count FROM order_line_items WHERE order_id = 0 OR order_id NOT IN (SELECT id FROM orders)");
   console.log('Orders in database:', ordersResult[0]?.values[0]?.[0] || 0);
   console.log('Families in database:', familiesResult[0]?.values[0]?.[0] || 0);
+  console.log('Line items in database:', lineItemsResult[0]?.values[0]?.[0] || 0);
+  console.log('Orphaned line items (order_id=0 or invalid):', orphanedResult[0]?.values[0]?.[0] || 0);
 } catch (e) {
   console.log('Could not count records:', e.message);
 }
